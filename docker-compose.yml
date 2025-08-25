@@ -1,0 +1,47 @@
+services:
+  changedetection:
+    image: dgtlmoon/changedetection.io:latest
+    container_name: changedetection
+    hostname: changedetection
+    environment:
+      - BASE_URL=${BASE_URL}
+      - PLAYWRIGHT_DRIVER_URL=ws://browser-chrome:3000/?stealth=1&--disable-web-security=true
+      - HIDE_REFERER=true
+    links:
+      - browser-chrome
+    volumes:
+      - changedetection-data:/datastore
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    depends_on:
+      browser-chrome:
+        condition: service_started
+
+  browser-chrome:
+    hostname: browser-chrome
+    container_name: browser-chrome
+    image: browserless/chrome:latest
+    environment:
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1024
+      - SCREEN_DEPTH=16
+      - CONNECTION_TIMEOUT=300000
+      - MAX_CONCURRENT_SESSIONS=5
+      - FETCH_WORKERS=5
+    ports:
+      - "3000:3000"
+    shm_size: "2g"
+    volumes:
+      - /dev/shm:/dev/shm
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+
+volumes:
+  changedetection-data:
+    external: true
+    name: "changedetection-data"
+    
