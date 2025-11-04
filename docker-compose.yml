@@ -1,10 +1,19 @@
+networks:
+  frontend:
+    name: frontend
+
+volumes:
+  changedetection-data:
+    external: true
+    name: "changedetection-data"
+
 services:
   changedetection:
     image: dgtlmoon/changedetection.io:latest
     container_name: changedetection
     hostname: changedetection
     environment:
-      - BASE_URL=${BASE_URL}
+      - BASE_URL=http://changeio.${DOMAIN}
       - PLAYWRIGHT_DRIVER_URL=ws://browser-chrome:3000/?stealth=1&--disable-web-security=true
       - HIDE_REFERER=true
     links:
@@ -16,9 +25,17 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    networks:
+      - frontend
     depends_on:
       browser-chrome:
         condition: service_started
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.changeio.rule=Host(`changeio.${DOMAIN}`)
+      - traefik.http.routers.changeio.entrypoints=websecure
+      - traefik.http.routers.changeio.tls.certresolver=le
+      - traefik.http.services.changeio.loadbalancer.server.port=5000
 
   browser-chrome:
     hostname: browser-chrome
@@ -34,14 +51,10 @@ services:
     ports:
       - "3000:3000"
     shm_size: "2g"
+    networks:
+      - frontend
     volumes:
       - /dev/shm:/dev/shm
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
-
-volumes:
-  changedetection-data:
-    external: true
-    name: "changedetection-data"
-    
