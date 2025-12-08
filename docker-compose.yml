@@ -33,8 +33,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.changeio.rule=Host(`changeio.${DOMAIN}`)
-      - traefik.http.routers.changeio.entrypoints=websecure
-      - traefik.http.routers.changeio.tls.certresolver=le
+      - traefik.http.routers.changeio.entrypoints=web
       - traefik.http.services.changeio.loadbalancer.server.port=5000
 
   browser-chrome:
