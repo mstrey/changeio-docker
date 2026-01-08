@@ -1,6 +1,7 @@
 networks:
   frontend:
     name: frontend
+    external: true
 
 volumes:
   changedetection-data:
@@ -13,7 +14,7 @@ services:
     container_name: changedetection
     hostname: changedetection
     environment:
-      - BASE_URL=http://changeio.${DOMAIN}
+      - BASE_URL=http://${SERVICE}.${DOMAIN}
       - PLAYWRIGHT_DRIVER_URL=ws://browser-chrome:3000/?stealth=1&--disable-web-security=true
       - HIDE_REFERER=true
     links:
@@ -31,10 +32,11 @@ services:
       browser-chrome:
         condition: service_started
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.changeio.rule=Host(`changeio.${DOMAIN}`)
-      - traefik.http.routers.changeio.entrypoints=web
-      - traefik.http.services.changeio.loadbalancer.server.port=5000
+      - "traefik.enable=true"
+      - "traefik.http.services.${SERVICE}.loadbalancer.server.port=5000"
+      - "traefik.http.routers.${SERVICE}.rule=Host(`${SERVICE}.${DOMAIN}`)"
+      - "traefik.http.routers.${SERVICE}.entrypoints=web"
+      - "traefik.http.routers.${SERVICE}.middlewares=crowdsec-check,ssl-header"
 
   browser-chrome:
     hostname: browser-chrome
@@ -52,6 +54,12 @@ services:
     shm_size: "2g"
     networks:
       - frontend
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     volumes:
       - /dev/shm:/dev/shm
       - /etc/timezone:/etc/timezone:ro
