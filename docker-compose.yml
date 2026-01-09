@@ -13,6 +13,11 @@ services:
     image: dgtlmoon/changedetection.io:latest
     container_name: changedetection
     hostname: changedetection
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
     environment:
       - BASE_URL=http://${SERVICE}.${DOMAIN}
       - PLAYWRIGHT_DRIVER_URL=ws://browser-chrome:3000/?stealth=1&--disable-web-security=true
@@ -42,6 +47,11 @@ services:
     hostname: browser-chrome
     container_name: browser-chrome
     image: browserless/chrome:latest
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"    # Renderizar páginas modernas exige CPU
+          memory: 1024M  # 1GB é um bom teto. Se passar, a aba quebra, não o servidor.
     environment:
       - SCREEN_WIDTH=1920
       - SCREEN_HEIGHT=1024
