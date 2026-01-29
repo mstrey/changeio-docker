@@ -41,7 +41,6 @@ services:
       - "traefik.http.services.${SERVICE}.loadbalancer.server.port=5000"
       - "traefik.http.routers.${SERVICE}.rule=Host(`${SERVICE}.${DOMAIN}`)"
       - "traefik.http.routers.${SERVICE}.entrypoints=web"
-      - "traefik.http.routers.${SERVICE}.middlewares=crowdsec-check,ssl-header"
 
   browser-chrome:
     hostname: browser-chrome
